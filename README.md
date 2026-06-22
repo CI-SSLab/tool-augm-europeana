@@ -1,39 +1,39 @@
-# Agente AI per la consultazione del patrimonio culturale europeo
+# AI Agent for European Cultural Heritage Consultation
 
-Questo progetto nasce nell’ambito della mia tesi di laurea e ha come obiettivo la realizzazione di un assistente conversazionale intelligente dedicato al patrimonio culturale europeo.
+This project was presented at the **PRESTIGE Workshop** at ICPR 2026 and aims to build an intelligent conversational assistant dedicated to European cultural heritage.
 
-L’applicazione permette all’utente di porre domande in linguaggio naturale su artisti e opere d’arte, sfruttando un modello linguistico di grandi dimensioni (LLM) integrato con Europeana, una delle principali piattaforme europee per la consultazione di contenuti culturali digitali.
+The application allows users to ask questions in natural language about artists and artworks, leveraging a large language model (LLM) integrated with Europeana, one of Europe's main platforms for accessing digital cultural content.
 
-Il sistema è stato sviluppato utilizzando CrewAI, Streamlit e Ollama, con l’obiettivo di combinare le capacità di comprensione del linguaggio naturale degli LLM con dati affidabili provenienti da fonti esterne.
-
----
-
-# Funzionalità principali
-
-- Interfaccia conversazionale simile a ChatGPT
-- Recupero di informazioni artistiche tramite Europeana API
-- Generazione di risposte in linguaggio naturale
-- Memoria conversazionale di breve termine
-- Visualizzazione dei dettagli tecnici dell’esecuzione
-- Controllo del comportamento del modello tramite task dedicati
+The system was built using CrewAI, Streamlit and Ollama, combining the natural language understanding capabilities of LLMs with reliable data from external sources.
 
 ---
 
-# Struttura del sistema
+# Main Features
 
-L’applicazione è composta da diverse componenti che collaborano tra loro:
-
-- **Streamlit** → gestione dell’interfaccia utente;
-- **CrewAI** → orchestrazione dell’agente intelligente;
-- **GPT-OSS tramite Ollama** → comprensione e generazione del testo;
-- **Tool Europeana** → recupero delle informazioni dal database culturale;
-- **Memoria conversazionale** → supporto alle interazioni multi-turno.
-
-L’intero sistema segue un approccio *tool-augmented*, in cui il modello linguistico utilizza fonti esterne per migliorare l’affidabilità delle risposte generate.
+- ChatGPT-like conversational interface
+- Retrieval of artistic information via the Europeana API
+- Natural language response generation
+- Short-term conversational memory
+- Technical execution details panel
+- Model behaviour control through dedicated tasks
 
 ---
 
-# Tecnologie utilizzate
+# System Architecture
+
+The application is composed of several components working together:
+
+- **Streamlit** → user interface management
+- **CrewAI** → intelligent agent orchestration
+- **GPT-OSS via Ollama** → text understanding and generation
+- **Europeana Tool** → information retrieval from the cultural database
+- **Conversational memory** → multi-turn interaction support
+
+The entire system follows a *tool-augmented* approach, where the language model uses external sources to improve the reliability of generated responses.
+
+---
+
+# Technologies Used
 
 - Python
 - Streamlit
@@ -43,10 +43,11 @@ L’intero sistema segue un approccio *tool-augmented*, in cui il modello lingui
 - Europeana API
 - Requests
 - python-dotenv
+- Docker / Docker Compose
 
 ---
 
-# Struttura del progetto
+# Project Structure
 
 ```bash
 project/
@@ -55,155 +56,235 @@ project/
 ├── qa_agent.py
 ├── answer_task.py
 ├── europeana_tool.py
-├── .env
+├── Dockerfile
+├── docker-compose.yml
+├── .dockerignore
+├── .env.example
 ├── requirements.txt
 └── README.md
 ```
 
 ---
 
-# Descrizione dei file
+# File Descriptions
 
 ## `app.py`
 
-Gestisce l’interfaccia Streamlit e il flusso principale dell’applicazione.
+Manages the Streamlit interface and the main application flow.
 
-Si occupa di:
+It handles:
 
-- ricevere l’input dell’utente;
-- mantenere lo storico della conversazione;
-- costruire la memoria breve;
-- creare ed eseguire l’agente;
-- mostrare i risultati e i dettagli tecnici.
+- receiving user input
+- maintaining conversation history
+- building short-term memory
+- creating and running the agent
+- displaying results and technical details
 
 ---
 
 ## `qa_agent.py`
 
-Contiene la configurazione dell’agente intelligente.
+Contains the configuration of the intelligent agent.
 
-L’agente viene definito come un esperto d’arte e utilizza il modello `gpt-oss` tramite Ollama.  
-Può utilizzare esclusivamente il tool Europeana per recuperare informazioni.
+The agent is defined as an art expert and uses the `gpt-oss` model via Ollama.
+It can only use the Europeana tool to retrieve information.
 
 ---
 
 ## `answer_task.py`
 
-Definisce il task assegnato all’agente.
+Defines the task assigned to the agent.
 
-Include le istruzioni operative e le regole da rispettare durante la generazione della risposta, ad esempio:
+Includes operational instructions and rules to follow during response generation, such as:
 
-- utilizzo controllato della memoria;
-- una sola chiamata al tool;
-- obbligo di usare dati provenienti da Europeana;
-- generazione della risposta in italiano.
+- controlled use of memory
+- a single tool call per turn
+- mandatory use of data from Europeana
+- response generation in Italian
 
 ---
 
 ## `europeana_tool.py`
 
-Implementa il tool personalizzato per l’accesso all’API Europeana.
+Implements the custom tool for accessing the Europeana API.
 
-Tra le principali funzionalità:
+Main features include:
 
-- pulizia delle query;
-- gestione delle richieste HTTP;
-- retry automatici in caso di errore;
-- normalizzazione dei risultati ottenuti;
-- estrazione di titolo, autore, anno e link delle opere.
-
----
-
-# Flusso di esecuzione
-
-Quando l’utente inserisce una domanda:
-
-1. il sistema acquisisce l’input;
-2. costruisce il contesto conversazionale;
-3. crea un nuovo agente CrewAI;
-4. esegue il task associato;
-5. interroga Europeana tramite il tool dedicato;
-6. genera la risposta finale;
-7. pulisce l’output prodotto dal modello;
-8. aggiorna la memoria della conversazione.
+- query cleaning
+- HTTP request handling
+- automatic retries on error
+- result normalisation
+- extraction of title, author, year and artwork links
 
 ---
 
-# Memoria conversazionale
+# Execution Flow
 
-Per mantenere continuità nelle interazioni, il sistema utilizza una memoria di breve termine composta da:
+When the user submits a question:
 
-- ultima domanda dell’utente;
-- riassunto dell’ultima risposta generata.
-
-La memoria viene utilizzata solo quando realmente utile al contesto della nuova richiesta.
-
----
-
-# Trasparenza del sistema
-
-L’applicazione include un pannello tecnico opzionale che consente di visualizzare:
-
-- la query inviata a Europeana;
-- i risultati restituiti dall’API;
-- l’output grezzo generato dal modello linguistico.
-
-Questa scelta è stata adottata per migliorare la trasparenza del sistema e facilitare eventuali attività di analisi o debugging.
+1. the system captures the input
+2. builds the conversational context
+3. creates a new CrewAI agent
+4. executes the associated task
+5. queries Europeana via the dedicated tool
+6. generates the final response
+7. cleans the model output
+8. updates the conversational memory
 
 ---
 
-# Installazione
+# Conversational Memory
 
-## 1. Clonare il repository
+To maintain continuity across interactions, the system uses a short-term memory composed of:
+
+- the user's last question
+- a summary of the last generated response
+
+Memory is only used when genuinely relevant to the new request.
+
+---
+
+# System Transparency
+
+The application includes an optional technical panel that allows users to view:
+
+- the query sent to Europeana
+- the results returned by the API
+- the raw output generated by the language model
+
+This was implemented to improve system transparency and to facilitate analysis or debugging activities.
+
+---
+
+# Installation
+
+## Option A — Docker (recommended)
+
+Docker is the fastest way to get the project running. It manages Ollama and the application in separate containers with no manual dependency setup required.
+
+### Prerequisites
+
+- [Docker](https://docs.docker.com/get-docker/) and [Docker Compose](https://docs.docker.com/compose/install/) installed
+- A valid [Europeana API key](https://apis.europeana.eu/en)
+
+### 1. Clone the repository
 
 ```bash
-git clone https://github.com/USERNAME/NOME_REPOSITORY.git
-cd NOME_REPOSITORY
+git clone https://github.com/USERNAME/tool-augm-europeana.git
+cd tool-augm-europeana
+```
+
+### 2. Configure environment variables
+
+Copy the example file and fill in your credentials:
+
+```bash
+cp .env.example .env
+```
+
+Edit `.env`:
+
+```env
+EUROPEANA_API_KEY=your_europeana_api_key
+
+OLLAMA_MODEL=openai/gpt-oss:20b
+OLLAMA_API_KEY=your_ollama_api_key
+
+# Optional: change the exposed port (default: 8501)
+# APP_PORT=8501
+```
+
+### 3. Start the containers
+
+```bash
+docker compose up --build
+```
+
+This will start two services:
+
+- **`tool-ech-ollama`** — the Ollama server (language model backend)
+- **`tool-ech-app`** — the Streamlit web application
+
+### 4. Open the application
+
+Once the containers are running, open your browser at:
+
+```
+http://localhost:8501
+```
+
+> If you changed `APP_PORT` in `.env`, use that port instead.
+
+### Useful commands
+
+```bash
+# Run in background (detached mode)
+docker compose up -d --build
+
+# Stop all containers
+docker compose down
+
+# View logs
+docker compose logs -f
+
+# Run the evaluation script (multi-turn benchmark)
+docker compose --profile eval run --rm tool-ech-evaluation
 ```
 
 ---
 
-## 2. Creare un ambiente virtuale
+## Option B — Local Installation (without Docker)
 
-### Windows
+### 1. Clone the repository
+
+```bash
+git clone https://github.com/USERNAME/tool-augm-europeana.git
+cd tool-augm-europeana
+```
+
+### 2. Create a virtual environment
+
+**Windows**
 
 ```bash
 python -m venv venv
 venv\Scripts\activate
 ```
 
-### Linux / macOS
+**Linux / macOS**
 
 ```bash
 python3 -m venv venv
 source venv/bin/activate
 ```
 
----
-
-## 3. Installare le dipendenze
+### 3. Install dependencies
 
 ```bash
 pip install -r requirements.txt
 ```
 
----
+### 4. Configure the `.env` file
 
-# Configurazione del file `.env`
-
-Creare un file `.env` nella root del progetto:
+Create a `.env` file in the project root (use `.env.example` as a template):
 
 ```env
-EUROPEANA_API_KEY=your_api_key
+EUROPEANA_API_KEY=your_europeana_api_key
 
-OLLAMA_BASE_URL=https://ollama.com
+OLLAMA_BASE_URL=http://localhost:11434
 OLLAMA_API_KEY=your_ollama_api_key
-OLLAMA_MODEL=gpt-oss:20b
+OLLAMA_MODEL=openai/gpt-oss:20b
 ```
 
----
+### 5. Start Ollama
 
-# Avvio dell’applicazione
+Make sure [Ollama](https://ollama.com) is installed and running locally, then pull the required model:
+
+```bash
+ollama pull gpt-oss:20b
+```
+
+### 6. Run the application
 
 ```bash
 streamlit run app.py
@@ -211,33 +292,35 @@ streamlit run app.py
 
 ---
 
-# Esempi di domande
+# Example Questions
 
-- Chi è Caravaggio?
-- Parlami di Van Gogh
-- Quali opere di Picasso sono presenti su Europeana?
-- Confronta Monet e Renoir
-- Descrivi un’opera di Leonardo da Vinci
-
----
-
-# Possibili sviluppi futuri
-
-Tra i possibili miglioramenti futuri:
-
-- integrazione di più fonti culturali;
-- ricerca semantica tramite embeddings;
-- memoria conversazionale avanzata;
-- supporto multimodale;
-- ranking intelligente dei risultati;
-- generazione automatica di suggerimenti per l’utente.
+- Who is Caravaggio?
+- Tell me about Van Gogh
+- Which works by Picasso are available on Europeana?
+- Compare Monet and Renoir
+- Describe a work by Leonardo da Vinci
 
 ---
 
-# Contesto accademico
+# Possible Future Developments
 
-Progetto sviluppato nell’ambito della tesi di laurea:
+Among possible future improvements:
 
-**“Agente AI per un sistema intelligente per la comprensione e la consultazione del patrimonio culturale europeo”**
+- integration of additional cultural sources
+- semantic search via embeddings
+- advanced conversational memory
+- multimodal support
+- intelligent result ranking
+- automatic suggestion generation for the user
 
-Corso di Laurea in Informatica.
+---
+
+# Citation
+
+If you use this project in your research, please cite:
+
+```bibtex
+@inproceedings{placeholder,
+  % BibTeX entry will be added once the proceedings are available
+}
+```

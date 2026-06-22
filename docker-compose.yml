@@ -1,0 +1,102 @@
+# ─────────────────────────────────────────────────────────────────────────────
+# Tool-Augmented Europeana Agent — Docker Compose
+#
+# Services:
+#   app        — Streamlit UI + CrewAI agent (always on)
+#   ollama     — Ollama LLM server           (always on)
+#   evaluation — Batch evaluation scripts    (opt-in via --profile eval)
+#
+# Quick start:
+#   cp .env.example .env      # fill in EUROPEANA_API_KEY and OLLAMA_MODEL
+#   docker compose up -d
+#
+# Change the exposed port (default 8501):
+#   APP_PORT=8080 docker compose up -d
+#
+# Run evaluation:
+#   docker compose --profile eval run --rm evaluation
+#   docker compose --profile eval run --rm evaluation \
+#     python evaluation/evaluate_multiturn.py
+# ─────────────────────────────────────────────────────────────────────────────
+
+services:
+
+  # ── Ollama — LLM inference server ─────────────────────────────────────────
+  ollama:
+    image: ollama/ollama:latest
+    container_name: tool-ech-ollama
+    restart: unless-stopped
+    ports:
+      - "11434:11434"
+    volumes:
+      - ollama-data:/root/.ollama   # model weights persist across restarts
+    healthcheck:
+      test: ["CMD", "curl", "-sf", "http://localhost:11434/api/tags"]
+      interval: 15s
+      timeout: 5s
+      retries: 6
+      start_period: 10s
+    networks:
+      - tool-ech-net
+
+  # ── App — Streamlit + CrewAI agent ────────────────────────────────────────
+  # Note: CrewAI is a Python library — it runs inside this container,
+  # not as a separate server process.
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: runtime
+    container_name: tool-ech-app
+    restart: unless-stopped
+    ports:
+      - "${APP_PORT:-8501}:8501"
+    environment:
+      # Europeana REST API key (required)
+      EUROPEANA_API_KEY: ${EUROPEANA_API_KEY:?Set EUROPEANA_API_KEY in your environment or .env file}
+      # Ollama — points to the sibling container by service name
+      OLLAMA_BASE_URL: http://ollama:11434
+      OLLAMA_MODEL: ${OLLAMA_MODEL:-openai/gpt-oss:20b}
+      # Only required when using Ollama Cloud instead of the local container
+      OLLAMA_API_KEY: ${OLLAMA_API_KEY:-}
+      # Streamlit port (must match EXPOSE in Dockerfile)
+      STREAMLIT_SERVER_PORT: 8501
+    depends_on:
+      ollama:
+        condition: service_healthy
+    networks:
+      - tool-ech-net
+
+  # ── Evaluation — batch evaluation scripts (opt-in profile) ────────────────
+  evaluation:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: runtime
+    container_name: tool-ech-evaluation
+    profiles:
+      - eval
+    environment:
+      EUROPEANA_API_KEY: ${EUROPEANA_API_KEY:?Set EUROPEANA_API_KEY in your environment or .env file}
+      OLLAMA_BASE_URL: http://ollama:11434
+      OLLAMA_MODEL: ${OLLAMA_MODEL:-openai/gpt-oss:20b}
+      OLLAMA_API_KEY: ${OLLAMA_API_KEY:-}
+    depends_on:
+      ollama:
+        condition: service_healthy
+    volumes:
+      # Results written by the script are persisted on the host
+      - ./evaluation/results:/app/evaluation/results
+    # Default: single-turn evaluation. Override with:
+    #   docker compose --profile eval run --rm evaluation \
+    #     python evaluation/evaluate_multiturn.py
+    command: ["python", "evaluation/evaluate.py", "--out", "evaluation/results"]
+    networks:
+      - tool-ech-net
+
+networks:
+  tool-ech-net:
+    driver: bridge
+
+volumes:
+  ollama-data:

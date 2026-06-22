@@ -1,0 +1,32 @@
+# Secrets — never bake into the image
+.env
+
+# Git internals
+.git/
+.gitignore
+
+# Python caches
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.pytest_cache/
+
+# Virtual environments
+.venv/
+venv/
+env/
+
+# OS / editor noise
+.DS_Store
+.idea/
+.vscode/
+
+# Evaluation output files (large, not needed at build time)
+evaluation/results/
+evaluation/evaluation/
+evaluation/*.csv
+evaluation/*.json
+
+# Docs
+README.md

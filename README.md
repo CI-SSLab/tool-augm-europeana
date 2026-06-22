@@ -8,6 +8,25 @@ The system was built using CrewAI, Streamlit and Ollama, combining the natural l
 
 ---
 
+## Table of Contents
+
+- [Main Features](#main-features)
+- [System Architecture](#system-architecture)
+- [Technologies Used](#technologies-used)
+- [Project Structure](#project-structure)
+- [File Descriptions](#file-descriptions)
+- [Execution Flow](#execution-flow)
+- [Conversational Memory](#conversational-memory)
+- [System Transparency](#system-transparency)
+- [Installation](#installation)
+  - [Option A — Docker (recommended)](#option-a--docker-recommended)
+  - [Option B — Local Installation](#option-b--local-installation-without-docker)
+- [Example Questions](#example-questions)
+- [Possible Future Developments](#possible-future-developments)
+- [Citation](#citation)
+
+---
+
 # Main Features
 
 - ChatGPT-like conversational interface
